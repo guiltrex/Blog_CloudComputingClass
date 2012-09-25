@@ -40,12 +40,14 @@ class CommentsController < ApplicationController
   # POST /comments
   # POST /comments.json
   def create
-    @comment = Comment.new(params[:comment])
-
+    @post = Post.find(params[:post_id])
+    @comment = @post.comments.create!(params[:comment])
+	
     respond_to do |format|
       if @comment.save
-        format.html { redirect_to @comment, notice: 'Comment was successfully created.' }
+        format.html { redirect_to @post }
         format.json { render json: @comment, status: :created, location: @comment }
+        format.js # create.js.erb
       else
         format.html { render action: "new" }
         format.json { render json: @comment.errors, status: :unprocessable_entity }
