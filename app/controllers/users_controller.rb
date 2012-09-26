@@ -1,4 +1,5 @@
 class UsersController < ApplicationController
+
   def new
 	@user=User.new
   end
@@ -6,16 +7,12 @@ class UsersController < ApplicationController
   def create
     @user = User.new(params[:user])
     if @user.save
-	  flash[:success] = "Welcome to the Sample App!"
-      redirect_to 'posts/index'
+	  sign_in @user
+	  flash[:success] = "Congratulation, #{@user.username}! You've successfully registered!"
+      redirect_to controller: 'posts', :action => 'index'
     else
       render 'new'
     end
   end
-  
-  def show
-	@user = User.find(params[:id])
-    @posts = @user.posts
-  end
-  
+
 end

@@ -1,6 +1,7 @@
 class PostsController < ApplicationController
-
-	before_filter :authenticate, :except=> [:index, :show]
+	before_filter :signed_in_user, only: [:create, :destroy]
+	before_filter :authenticate, :except=> [:index, :show, :new, :create]
+	before_filter :correct_user, only: [:destroy, :update, :edit]
   # GET /posts
   # GET /posts.json
   def index
@@ -44,7 +45,7 @@ class PostsController < ApplicationController
   # POST /posts
   # POST /posts.json
   def create
-    @post = Post.new(params[:post])
+    @post = current_user.posts.build(params[:post])
 
     respond_to do |format|
       if @post.save
@@ -90,5 +91,17 @@ class PostsController < ApplicationController
 	authenticate_or_request_with_http_basic do |name, password|
 		name == "admin" && password =="secret"
 	end
+  end
+  
+  def correct_user
+	if !current_user.nil? 
+      @post = current_user.posts.find_by_id(params[:id])
+      if @post.nil?
+		flash[:notice] = 'You cannot edit other\'s blog!'
+		redirect_to root_url
+      end 
+    else
+      redirect_to new_session_path  
+     end
   end
 end
