@@ -1,6 +1,7 @@
 class PostsController < ApplicationController
 
 	before_filter :authenticate, :except=> [:index, :show]
+
   # GET /posts
   # GET /posts.json
   def index
@@ -61,24 +62,27 @@ class PostsController < ApplicationController
   # PUT /posts/1.json
   def update
     @post = Post.find(params[:id])
-
+	@owner = Post.find(params[:id]).owner
+	@cur_owner=params[:post][:owner]
     respond_to do |format|
-      if @post.update_attributes(params[:post])
+       if @owner == @cur_owner && @post.update_attributes(params[:post]) 
         format.html { redirect_to @post, notice: 'Post was successfully updated.' }
         format.json { head :no_content }
-      else
-        format.html { render action: "edit" }
+       else
+        format.html do 
+			@error='The post can only be editted by the Author'
+			render action: "edit"
+		end
         format.json { render json: @post.errors, status: :unprocessable_entity }
-      end
+       end
     end
   end
 
   # DELETE /posts/1
   # DELETE /posts/1.json
   def destroy
-    @post = Post.find(params[:id])
-    @post.destroy
-
+    @post = Post.find(params[:id])   
+		@post.destroy
     respond_to do |format|
       format.html { redirect_to posts_url }
       format.json { head :no_content }
@@ -91,4 +95,9 @@ class PostsController < ApplicationController
 		name == "admin" && password =="secret"
 	end
   end
+  def auth?
+    post_owner=Post.find_by_id(params[:id]).owner
+    params[:post][:owner] == post_owner
+  end
+
 end
